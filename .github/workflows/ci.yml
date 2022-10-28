@@ -1,0 +1,33 @@
+name: ci
+on:
+  push: {branches-ignore: [latest], tags: ['*']}
+  pull_request:
+jobs:
+##### linux #####
+  linux:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {os: debian, codename: bullseye, image_owner: , package_type: deb}
+    runs-on: ubuntu-latest
+    container: ${{ matrix.image_owner }}${{ matrix.os }}:${{ matrix.codename }}
+    name: linux - ${{ matrix.image_owner }}${{ matrix.os }}:${{ matrix.codename }}
+    steps:
+      - name: install ci tools
+        run: |
+          apt --quiet update --assume-yes
+          apt --quiet install --assume-yes git
+      - name: add llvm repo (for latest clang tools)
+        uses: myci-actions/add-deb-repo@master
+        with:
+          repo: deb http://apt.llvm.org/${{ matrix.codename }} llvm-toolchain-${{ matrix.codename }} main
+          repo-name: llvm
+          keys-asc: https://apt.llvm.org/llvm-snapshot.gpg.key
+          install: clang-format clang-tidy
+      - name: git clone
+        uses: myci-actions/checkout@master
+      - name: test .clang-format
+        run: clang-format/test.sh
+      - name: test .clang-tidy
+        run: clang-tidy/test.sh
