@@ -4,7 +4,19 @@ Checks: |
   bugprone-exception-escape,
   readability-identifier-naming,
   modernize-*,
-  -modernize-use-trailing-return-type
+  -modernize-use-trailing-return-type,
+  
+  -modernize-use-using,
+  -readability-identifier-naming,
+  -modernize-use-nodiscard,
+  -modernize-macro-to-enum,
+  -modernize-return-braced-init-list,
+  -modernize-use-emplace,
+  -modernize-avoid-c-arrays,
+  -modernize-use-equals-default,
+  -modernize-use-default-member-init,
+  -modernize-use-auto,
+  -modernize-use-override
 WarningsAsErrors: '*'
 HeaderFilterRegex: '.*'
 InheritParentConfig: false
