@@ -46,7 +46,7 @@ public:
 	}
 };
 
-template <typename param, int int_param, template <class, class> class param_templ>
+template <typename param_type, int int_param, template <class, class> class param_templ>
 class sample_template{
 
 };
