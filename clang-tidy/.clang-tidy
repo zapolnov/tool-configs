@@ -1,18 +1,11 @@
 # version 0
 
 Checks: |
-  bugprone-exception-escape,
   readability-identifier-naming,
   modernize-*,
   -modernize-use-trailing-return-type,
-  
-  -modernize-use-using,
-  -readability-identifier-naming,
   -modernize-use-nodiscard,
-  -modernize-macro-to-enum,
-  -modernize-return-braced-init-list,
-  -modernize-use-emplace,
-  -modernize-avoid-c-arrays,
+  bugprone-exception-escape,
 WarningsAsErrors: '*'
 HeaderFilterRegex: '.*'
 InheritParentConfig: false
@@ -24,7 +17,9 @@ CheckOptions:
   - { key: readability-identifier-naming.NamespaceCase, value: lower_case }
   - { key: readability-identifier-naming.ParameterCase, value: lower_case }
   - { key: readability-identifier-naming.TemplateParameterCase, value: lower_case }
+  - { key: readability-identifier-naming.TemplateTemplateParameterSuffix, value: _templ }
   - { key: readability-identifier-naming.TypeAliasCase, value: lower_case }
   - { key: readability-identifier-naming.TypedefCase, value: lower_case }
+  - { key: readability-identifier-naming.TypeTemplateParameterSuffix, value: _type }
   - { key: readability-identifier-naming.UnionCase, value: lower_case }
   - { key: readability-identifier-naming.VariableCase, value: lower_case }
