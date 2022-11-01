@@ -5,7 +5,8 @@ Checks: |
   modernize-*,
   -modernize-use-trailing-return-type,
   -modernize-use-nodiscard,
-  bugprone-exception-escape,
+  bugprone-*,
+  -bugprone-easily-swappable-parameters,
 WarningsAsErrors: '*'
 HeaderFilterRegex: '.*'
 InheritParentConfig: false
