@@ -1,6 +1,5 @@
 # version 0
 
-# disable clang-diagnostic-ignored-optimization-argument, as some gcc optimization flags are not supported by clang
 Checks: |
   readability-identifier-naming,
   modernize-*,
@@ -8,7 +7,6 @@ Checks: |
   -modernize-use-nodiscard,
   bugprone-*,
   -bugprone-easily-swappable-parameters,
-  -clang-diagnostic-ignored-optimization-argument,
 WarningsAsErrors: '*'
 HeaderFilterRegex: '.*'
 InheritParentConfig: false
