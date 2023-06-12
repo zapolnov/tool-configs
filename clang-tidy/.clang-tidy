@@ -7,6 +7,7 @@ Checks: |
   -modernize-use-nodiscard,
   bugprone-*,
   -bugprone-easily-swappable-parameters,
+  cppcoreguidelines-*,
 WarningsAsErrors: '*'
 HeaderFilterRegex: '.*'
 InheritParentConfig: false
