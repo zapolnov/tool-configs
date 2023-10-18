@@ -46,7 +46,7 @@ BraceWrapping:
   SplitEmptyFunction: 'false'
   SplitEmptyRecord: 'false'
   SplitEmptyNamespace: 'false'
-BreakBeforeBinaryOperators: NonAssignment
+BreakBeforeBinaryOperators: None
 BreakBeforeBraces: Custom
 BreakBeforeConceptDeclarations: Always # clang-format 15
 BreakBeforeTernaryOperators: 'true'
