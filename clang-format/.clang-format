@@ -111,7 +111,7 @@ PointerAlignment: Left
 # QualifierAlignment: Custom # for some reason it increases clang-format run time significantly
 # QualifierOrder: ['inline', 'static', 'const', 'type'] # doesn't work without QualifierAlignment: Custom
 ReferenceAlignment: Left
-ReflowComments: 'true'
+ReflowComments: 'false'
 RemoveBracesLLVM: 'false'
 RequiresClausePosition: OwnLine # clang-format 15
 SeparateDefinitionBlocks: Always
