@@ -43,8 +43,6 @@ macro(declare_library name)
 
     include(GNUInstallDirs)
 
-    project(${name})
-
     # Check if {NAME}_DISABLE_INSTALL variable is set and act accordingly
     string(TOUPPER "${name}" nameupper)
     string(REPLACE "-" "_" nameupper "${nameupper}")
