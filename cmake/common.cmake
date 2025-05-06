@@ -3,6 +3,11 @@ if(IGAGIS_CMAKE_COMMON_INCLUDED)
 endif()
 set(IGAGIS_CMAKE_COMMON_INCLUDED TRUE)
 
+include(GNUInstallDirs)
+
+get_property(generator_is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG SET)
+set(exe_output_dir "${CMAKE_BINARY_DIR}/_exe")
+
 if(MSVC)
     add_definitions(
         /wd5055 # operator '*': deprecated between enumerations and floating-point types
@@ -34,14 +39,80 @@ macro(add_source_directory out srcdir)
     endforeach()
 endmacro()
 
+macro(install_resource_file out srcfile dstfile)
+    set(outfile "${exe_output_dir}/${dstfile}")
+
+    get_filename_component(path "${dstfile}" DIRECTORY)
+    string(REPLACE "/" "\\" path "Generated Files/${path}")
+    source_group("${path}" FILES "${outfile}")
+    list(APPEND ${out} "${outfile}")
+
+    add_custom_command(
+        OUTPUT
+            "${outfile}"
+        COMMAND
+            "${CMAKE_COMMAND}" -E copy "${srcfile}" "${outfile}"
+        DEPENDS
+            "${srcfile}"
+        MAIN_DEPENDENCY
+            "${srcfile}"
+    )
+endmacro()
+
+macro(add_resource_directory out srcdir)
+    get_filename_component(dirname "${srcdir}" NAME)
+
+    file(GLOB_RECURSE globresult RELATIVE "${srcdir}" CONFIGURE_DEPENDS "${srcdir}/*")
+
+    foreach(file ${globresult})
+        get_filename_component(path "${file}" DIRECTORY)
+        string(REPLACE "/" "\\" path "Resource Files/${path}")
+        source_group("${path}" FILES "${srcdir}/${file}")
+        list(APPEND ${out} "${srcdir}/${file}")
+
+        if(NOT ${generator_is_multi_config})
+            install_resource_file(${out} "${srcdir}/${file}" "${dirname}/${file}")
+        else()
+            foreach(cfg ${CMAKE_CONFIGURATION_TYPES})
+                install_resource_file(${out} "${srcdir}/${file}" "${cfg}/${dirname}/${file}")
+            endforeach()
+        endif()
+
+        if(${install})
+            install(
+                FILE
+                    "${srcdir}/${file}"
+                DESTINATION
+                    "${CMAKE_INSTALL_DATADIR}/${dirname}"
+            )
+        endif()
+    endforeach()
+endmacro()
+
+macro(add_target_dependencies target visibility)
+    foreach(dep ${ARGN})
+        if(NOT TARGET ${dep}::${dep})
+            find_package(${dep} CONFIG REQUIRED)
+        endif()
+        target_link_libraries(${target} ${visibility} ${dep}::${dep})
+    endforeach()
+endmacro()
+
+macro(add_target_external_dependencies target visibility)
+    foreach(dep ${dl_EXTERNAL_DEPENDENCIES})
+        if(NOT TARGET ${dep}::${dep})
+            find_package(${dep} REQUIRED)
+        endif()
+        target_link_libraries(${target} ${visibility} ${dep}::${dep})
+    endforeach()
+endmacro()
+
 macro(declare_library name)
     set(options)
     set(single INSTALL)
-    set(multiple SOURCES DEPENDENCIES EXTERNAL_DEPENDENCIES
+    set(multiple SOURCES RESOURCES DEPENDENCIES EXTERNAL_DEPENDENCIES
         PRIVATE_INCLUDE_DIRECTORIES PUBLIC_INCLUDE_DIRECTORIES INSTALL_INCLUDE_DIRECTORIES)
     cmake_parse_arguments(dl "${options}" "${single}" "${multiple}" ${ARGN})
-
-    include(GNUInstallDirs)
 
     # Check if {NAME}_DISABLE_INSTALL variable is set and act accordingly
     string(TOUPPER "${name}" nameupper)
@@ -64,7 +135,7 @@ macro(declare_library name)
         endif()
     endforeach()
 
-    add_library(${name} ${static} ${dl_SOURCES})
+    add_library(${name} ${static} ${dl_SOURCES} ${dl_RESOURCES})
 
     target_compile_features(${name} ${public} cxx_std_20)
     set_target_properties(${name} PROPERTIES CXX_STANDARD_REQUIRED ON)
@@ -78,19 +149,8 @@ macro(declare_library name)
         target_include_directories(${name} PRIVATE $<BUILD_INTERFACE:${dir}>)
     endforeach()
 
-    foreach(dep ${dl_DEPENDENCIES})
-        if(NOT TARGET ${dep}::${dep})
-            find_package(${dep} CONFIG REQUIRED)
-        endif()
-        target_link_libraries(${name} ${public} ${dep}::${dep})
-    endforeach()
-
-    foreach(dep ${dl_EXTERNAL_DEPENDENCIES})
-        if(NOT TARGET ${dep}::${dep})
-            find_package(${dep} REQUIRED)
-        endif()
-        target_link_libraries(${name} ${public} ${dep}::${dep})
-    endforeach()
+    add_target_dependencies(${name} ${public} ${dl_DEPENDENCIES})
+    add_target_external_dependencies(${name} ${public} ${dl_EXTERNAL_DEPENDENCIES})
 
     if(${install})
         target_include_directories(${name} ${public} $<INSTALL_INTERFACE:include>)
@@ -126,4 +186,31 @@ macro(declare_library name)
                 "${name}::"
         )
     endif()
+endmacro()
+
+macro(declare_executable name)
+    set(options)
+    set(single)
+    set(multiple SOURCES INCLUDE_DIRECTORIES LINK_LIBRARIES DEPENDENCIES EXTERNAL_DEPENDENCIES)
+    cmake_parse_arguments(dl "${options}" "${single}" "${multiple}" ${ARGN})
+
+    add_executable(${name} ${dl_SOURCES})
+    target_compile_features(${name} ${public} cxx_std_20)
+
+    set_target_properties(${name} PROPERTIES
+        CXX_STANDARD_REQUIRED ON
+        CXX_EXTENSIONS OFF
+        RUNTIME_OUTPUT_DIRECTORY "${exe_output_dir}"
+    )
+
+    foreach(dir ${dl_INCLUDE_DIRECTORIES})
+        target_include_directories(${name} PRIVATE "${dir}")
+    endforeach()
+
+    foreach(lib ${dl_LINK_LIBRARIES})
+        target_link_libraries(${name} PRIVATE "${lib}")
+    endforeach()
+
+    add_target_dependencies(${name} PRIVATE ${dl_DEPENDENCIES})
+    add_target_external_dependencies(${name} PRIVATE ${dl_EXTERNAL_DEPENDENCIES})
 endmacro()
