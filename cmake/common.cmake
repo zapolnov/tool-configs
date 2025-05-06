@@ -200,6 +200,7 @@ macro(declare_executable name)
     set_target_properties(${name} PROPERTIES
         CXX_STANDARD_REQUIRED ON
         CXX_EXTENSIONS OFF
+        VS_DEBUGGER_WORKING_DIRECTORY "${exe_output_dir}/$<CONFIG>"
         RUNTIME_OUTPUT_DIRECTORY "${exe_output_dir}"
     )
 
