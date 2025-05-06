@@ -195,7 +195,7 @@ macro(declare_executable name)
     cmake_parse_arguments(dl "${options}" "${single}" "${multiple}" ${ARGN})
 
     add_executable(${name} ${dl_SOURCES})
-    target_compile_features(${name} ${public} cxx_std_20)
+    target_compile_features(${name} PRIVATE cxx_std_20)
 
     set_target_properties(${name} PROPERTIES
         CXX_STANDARD_REQUIRED ON
