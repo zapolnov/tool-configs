@@ -100,6 +100,20 @@ endmacro()
 
 macro(add_target_external_dependencies target visibility)
     foreach(dep ${dl_EXTERNAL_DEPENDENCIES})
+        if(WIN32 AND "${dep}" STREQUAL "GLESv2") # special case to use ANGLE on Win32 for GLESv2
+            if(NOT TARGET unofficial::angle::libGLESv2)
+                find_package(unofficial-angle REQUIRED CONFIG)
+            endif()
+            target_link_libraries(${target} ${visibility} unofficial::angle::libGLESv2)
+            # For some stupid reason, angle package puts GLES2 headers into ANGLE subdirectory. Add it to include paths
+            get_target_property(ANGLE_INCLUDE_DIRS unofficial::angle::libGLESv2 INTERFACE_INCLUDE_DIRECTORIES)
+            foreach(dir ${ANGLE_INCLUDE_DIRS})
+                target_include_directories(${target} ${visibility} "${dir}/ANGLE")
+            endforeach()
+            # For some another stupid reason, ANGLE package is missing KHR/khrplatform.h. Get it from another package.
+            target_include_directories(${target} ${visibility} "${EGL_INCLUDE_DIR}")
+            continue()
+        endif()
         if(NOT TARGET ${dep}::${dep})
             find_package(${dep} REQUIRED)
         endif()
